@@ -1,2 +1,7 @@
 # Resistor-and-Transistor-Tester
-基于ESP-IDF开发的三极管和电阻测量仪
+
+一个基于ESP32-S3开发的电阻&三极管测量仪
+
+ESP-IDF的版本是5.4
+
+其他的以后写
