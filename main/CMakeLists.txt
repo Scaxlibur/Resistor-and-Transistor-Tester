@@ -1,2 +1,2 @@
-idf_component_register(SRCS "adc.cpp" "main.cpp"
+idf_component_register(SRCS "resistor.cpp" "transistor.cpp" "adc.cpp" "main.cpp"
                     INCLUDE_DIRS ".")

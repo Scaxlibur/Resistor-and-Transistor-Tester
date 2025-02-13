@@ -4,13 +4,14 @@
 #include "esp_adc/adc_oneshot.h"
 #define MAX_VOTAGE_x10 33  //ADC最大读取电压的10倍，乘10是为了浮点计算优化
 
-class ADC
+class ADC_class
 {
     public:
-    ADC();
-    int votage_read_x10();
+    ADC_class();
+    int voltage_read_x10();
 
     private:
+    
     adc_oneshot_unit_handle_t ADC_handle;
     adc_oneshot_unit_init_cfg_t ADC_init_config = {
         .unit_id = ADC_UNIT_1,
