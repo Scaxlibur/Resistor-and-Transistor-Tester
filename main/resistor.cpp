@@ -29,5 +29,5 @@ int resistorMeasuring_class::R_compute(resistorMeasuringType_t Rtype)
     default:
         break;
     }
-    
+    return 0;
 }

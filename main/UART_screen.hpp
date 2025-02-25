@@ -4,7 +4,6 @@
 #include "driver/uart.h" 
 #include <string.h>
 #include "soc\gpio_num.h"
-#include "FreeRTOS.h"
 
 #define UART_NUM_SCREEN UART_NUM_1
 #define UART_NUM_SCREEN_TX UART_PIN_NO_CHANGE
@@ -30,15 +29,5 @@ public:
     ~UART_screen_class();
     
 };
-
-UART_screen_class::UART_screen_class()
-{
-    init_uart();
-}
-
-UART_screen_class::~UART_screen_class()
-{
-}
-
 
 #endif

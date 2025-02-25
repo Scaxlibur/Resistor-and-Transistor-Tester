@@ -1,7 +1,7 @@
 #ifndef __I2C_SCREEN_HPP__
 #define __I2C_SCREEN_HPP__
 
-#include "i2c_master.h"
+#include "driver/i2c_master.h"
 
 #define SDA_IO_NUM GPIO_NUM_0
 #define SCL_IO_NUM GPIO_NUM_1

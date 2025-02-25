@@ -5,5 +5,8 @@
         "board/esp32s3-builtin.cfg"
     ],
     "idf.portWin": "COM5",
-    "idf.toolsPathWin": "C:\\Users\\feisibo\\.espressif"
+    "idf.toolsPathWin": "C:\\Users\\feisibo\\.espressif",
+    "files.associations": {
+        "stdio.h": "c"
+    }
 }

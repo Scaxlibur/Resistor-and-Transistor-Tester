@@ -8,6 +8,7 @@ class ADC_class
 {
     public:
     ADC_class();
+    ~ADC_class();
     int voltage_read_x10();
 
     private:

@@ -21,5 +21,5 @@ int transistorMeasuring_class::beta_compute(transistorType_t transistorType){ //
         int beta = voltage_x10 * 200;//公式：Iec = 2*Vadc*100, beta = Iec / 0.1 
         return beta;
     }
-    
+    return 0;
 }

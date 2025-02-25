@@ -12,7 +12,7 @@ ADC_class::~ADC_class()
 
 int ADC_class::voltage_read_x10()
 {
-    int *Dout;
+    int *Dout = NULL;
     ESP_ERROR_CHECK(adc_oneshot_read(ADC_handle, ADC_CHANNEL_0, Dout));
     int output_10x = (*Dout * MAX_VOTAGE_x10) >> ADC_BITWIDTH_DEFAULT;  //转换公式Vout = Dout * Vmax / Dmax
     return output_10x;
