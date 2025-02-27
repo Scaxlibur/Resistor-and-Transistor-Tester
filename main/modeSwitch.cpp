@@ -28,6 +28,6 @@ measuringMode_t modeSwitch_class::whichMode()
             return ohm200K;
         }
     }else{
-        return tansistor;
+        return transistor;
     }
 }

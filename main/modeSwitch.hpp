@@ -14,7 +14,7 @@ typedef enum{
     ohm2K,
     ohm20K,
     ohm200K,
-    tansistor,
+    transistor,
     NPN,
     PNP
 }measuringMode_t; //测量挡位

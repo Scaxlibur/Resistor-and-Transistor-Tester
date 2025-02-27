@@ -5,13 +5,7 @@
 #include "UART_screen.hpp"
 #include "modeSwitch.hpp"
 
-typedef enum{
-    resistor,
-    transistor
-}whichRunning_t;
-
 typedef struct{
-    whichRunning_t whichRunning;
     measuringMode_t measuringMode;
     double measuringValue;
     int msg = 0;
@@ -46,10 +40,12 @@ void switch_task(void *arg)
     BaseType_t modeSwitch_resistor_com_status;
     BaseType_t modeSwitch_transistor_com_status;
     measuringMode_t last_measuringMode = ohm2K;//存储之前挡位，避免反复发送
+    measuringMode_t now_measuringMode = modeSwitch.whichMode();
     while(true)
     {
-        if(last_measuringMode != modeSwitch.whichMode()){
-            last_measuringMode = modeSwitch.whichMode();
+        now_measuringMode = modeSwitch.whichMode();
+        if(last_measuringMode != now_measuringMode){
+            last_measuringMode = now_measuringMode;
             switch (last_measuringMode)
             {
             case ohm200:
@@ -67,8 +63,7 @@ void switch_task(void *arg)
             case ohm200K:
                 modeSwitch_resistor_com.measuringMode = last_measuringMode;
                 modeSwitch_I2Cscreen_com.measuringMode = last_measuringMode;
-            break;
-            case tansistor:
+            case transistor:
                 modeSwitch_transistor_com.measuringMode = last_measuringMode;
                 modeSwitch_I2Cscreen_com.measuringMode = last_measuringMode;
             break;
