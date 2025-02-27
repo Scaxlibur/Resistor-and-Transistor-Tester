@@ -6,7 +6,7 @@
 #define SDA_IO_NUM GPIO_NUM_0
 #define SCL_IO_NUM GPIO_NUM_1
 
-class i2c_screen
+class I2Cscreen_class
 {
 private:
     i2c_master_bus_config_t i2c_config ={
@@ -30,8 +30,8 @@ private:
     
 
 public:
-    i2c_screen(/* args */);
-    ~i2c_screen();
+    I2Cscreen_class(/* args */);
+    ~I2Cscreen_class();
     int updateScreen(uint8_t *data_wr);
 };
 
