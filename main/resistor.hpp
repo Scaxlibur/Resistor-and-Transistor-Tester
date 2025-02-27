@@ -13,10 +13,10 @@ typedef enum{
 class resistorMeasuring_class
 {
 private:
-    int R_compute(resistorMeasuringType_t Rtype);
     ADC_class ADC; 
 
 public:
+    int R_compute(resistorMeasuringType_t Rtype);
     resistorMeasuring_class(/* args */);
     ~resistorMeasuring_class();
 };
