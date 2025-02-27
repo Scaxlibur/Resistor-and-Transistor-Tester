@@ -1,15 +1,15 @@
 #include "UART_screen.hpp"
 
-UART_screen_class::UART_screen_class()
+UARTscreen_class::UARTscreen_class()
 {
     init_uart();
 }
 
-UART_screen_class::~UART_screen_class()
+UARTscreen_class::~UARTscreen_class()
 {
 }
 
-void UART_screen_class::init_uart(void){
+void UARTscreen_class::init_uart(void){
     if(uart_is_driver_installed(UART_NUM_SCREEN) == false){
         ESP_ERROR_CHECK(uart_param_config(UART_NUM_SCREEN, &uart_config));
         ESP_ERROR_CHECK(uart_set_pin(UART_NUM_SCREEN, UART_NUM_SCREEN_TX, UART_NUM_SCREEN_RX, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
@@ -17,7 +17,7 @@ void UART_screen_class::init_uart(void){
     };
 }
 
-int UART_screen_class::command_loop(void)
+int UARTscreen_class::command_loop(void)
 {
   int length = 0;
   uart_get_buffered_data_len(UART_NUM_SCREEN, (size_t*)&length);

@@ -4,12 +4,13 @@
 #include "driver/uart.h" 
 #include <string.h>
 #include "soc\gpio_num.h"
+#include "FreeRTOS/portmacro.h"
 
 #define UART_NUM_SCREEN UART_NUM_1
 #define UART_NUM_SCREEN_TX UART_PIN_NO_CHANGE
 #define UART_NUM_SCREEN_RX UART_PIN_NO_CHANGE
 
-class UART_screen_class
+class UARTscreen_class
 {
 private:
     const uart_config_t uart_config = {
@@ -25,8 +26,8 @@ private:
     int command_loop(void);
 
 public:
-    UART_screen_class();
-    ~UART_screen_class();
+    UARTscreen_class();
+    ~UARTscreen_class();
     
 };
 
