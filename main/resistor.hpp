@@ -2,13 +2,9 @@
 #define __RESISTOR_HPP__
 
 #include "adc.hpp"
+#include "modeSwitch.hpp"
 
-typedef enum{
-    ohm200,
-    ohm2K,
-    ohm20K,
-    ohm200K
-}resistorMeasuringType_t; //电阻测量挡位
+
 
 class resistorMeasuring_class
 {
@@ -16,7 +12,7 @@ private:
     ADC_class ADC; 
 
 public:
-    int R_compute(resistorMeasuringType_t Rtype);
+    int R_compute(measuringMode_t Rtype);
     resistorMeasuring_class(/* args */);
     ~resistorMeasuring_class();
 };
