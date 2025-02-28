@@ -90,10 +90,29 @@ void resistor_task(void *arg)
     data4Tasks I2Cscreen_resistor_com;
     while (true)
     {
-        I2Cscreen_resistor_com_status = xQueueReceive(I2Cscreen_resistor_com_handle, &I2Cscreen_resistor_com.measuringMode, 500/portTICK_PERIOD_MS);  //从队列I2Cscreen_resistor_com中取一条数据
-        if(I2Cscreen_resistor_com_status == pdPASS )
+        I2Cscreen_resistor_com_status = xQueueReceive(I2Cscreen_resistor_com_handle, &I2Cscreen_resistor_com, 500/portTICK_PERIOD_MS);  //从队列I2Cscreen_resistor_com中取一条数据
+        if(I2Cscreen_resistor_com_status == pdPASS)
         {
-            resistor.R_compute(I2Cscreen_resistor_com.measuringMode);
+            I2Cscreen_resistor_com_status = pdFAIL;
+            switch (I2Cscreen_resistor_com.measuringMode)
+            {
+            case ohm200:
+                I2Cscreen_resistor_com.measuringValue = resistor.R_compute(ohm200);
+                break;
+            case ohm2K:
+                I2Cscreen_resistor_com.measuringValue = resistor.R_compute(ohm2K);
+                break;
+            case ohm20K:
+                I2Cscreen_resistor_com.measuringValue = resistor.R_compute(ohm20K);
+                break;
+            case ohm200K:
+                I2Cscreen_resistor_com.measuringValue = resistor.R_compute(ohm200K);
+                break;
+            default:
+                break;
+            }
+            
+            I2Cscreen_resistor_com_status = xQueueSendToFront(I2Cscreen_resistor_com_handle, &I2Cscreen_resistor_com, 50/portTICK_PERIOD_MS);//把状态发送给屏幕
         }
     }
     
