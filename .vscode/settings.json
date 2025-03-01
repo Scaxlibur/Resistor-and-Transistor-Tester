@@ -1,6 +1,6 @@
 {
     "C_Cpp.intelliSenseEngine": "default",
-    "idf.espIdfPathWin": "f:\\git\\esp\\v5.4\\esp-idf",
+    "idf.espIdfPathWin": "d:\\esp\\v5.4\\esp-idf",
     "idf.openOcdConfigs": [
         "board/esp32s3-builtin.cfg"
     ],
@@ -8,5 +8,12 @@
     "idf.toolsPathWin": "C:\\Users\\feisibo\\.espressif",
     "files.associations": {
         "stdio.h": "c"
+    },
+    "idf.pythonInstallPath": "C:\\Users\\feisibo\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
+    "idf.customExtraVars": {
+        "OPENOCD_SCRIPTS": "C:\\Users\\feisibo\\.espressif\\tools\\openocd-esp32\\v0.12.0-esp32-20240318/openocd-esp32/share/openocd/scripts",
+        "IDF_CCACHE_ENABLE": "1",
+        "ESP_ROM_ELF_DIR": "C:\\Users\\feisibo\\.espressif\\tools\\esp-rom-elfs\\20240305/",
+        "IDF_TARGET": "esp32s3"
     }
 }

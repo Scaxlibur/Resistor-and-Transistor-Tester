@@ -9,6 +9,7 @@ typedef struct{
     measuringMode_t measuringMode;  //测量模式
     uint16_t measuringValue_int;    //测量结果的整数部分
     uint16_t measuringValue_float;  //测量结果的小数部分
+    double measuringValue;
 }data4Tasks;
 
 //QueueHandle_t UARTscreen_modeSwitch_measuring_com_handle;
