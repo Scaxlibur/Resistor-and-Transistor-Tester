@@ -1,5 +1,42 @@
 #include "UART_screen.hpp"
 
+void UARTscreen_class::UARTWriteBytes(uint8_t data)
+{
+    uart_write_bytes(UART_NUM_SCREEN, &data, 1);
+}
+
+
+void UARTscreen_class::UARTWriteBytes(uint16_t data)
+{
+    uint8_t data1 = data >> 8;
+    uart_write_bytes(UART_NUM_SCREEN, &data1, 1);
+    uart_write_bytes(UART_NUM_SCREEN, &data, 1);
+}
+
+void UARTscreen_class::UARTWriteBytes(uint32_t data)
+{
+    uint8_t data1 = data >> 24;
+    uint8_t data2 = data >> 16;
+    uint8_t data3 = data >> 8;
+    uart_write_bytes(UART_NUM_SCREEN, &data1, 1);
+    uart_write_bytes(UART_NUM_SCREEN, &data2, 1);
+    uart_write_bytes(UART_NUM_SCREEN, &data3, 1);
+    uart_write_bytes(UART_NUM_SCREEN, &data, 1);
+}
+
+void UARTscreen_class::UARTWriteBytes(const char* data)
+{
+    for(size_t i = 0; i < strlen(data); i++)
+    {
+        uart_write_bytes(UART_NUM_SCREEN, (data + i), sizeof(char));
+    }
+}
+
+void UARTscreen_class::UARTcommandEnd(void)
+{
+    uart_write_bytes(UART_NUM_SCREEN, "\xff\xff\xff", 3);
+}
+
 UARTscreen_class::UARTscreen_class()
 {
     init_uart();
@@ -17,23 +54,66 @@ void UARTscreen_class::init_uart(void){
     };
 }
 
-int UARTscreen_class::command_loop(void)
+void UARTscreen_class::command_receive(data4Tasks com)
 {
-  int length = 0;
-  uart_get_buffered_data_len(UART_NUM_SCREEN, (size_t*)&length);
-  if (length == 0) return 0;// 如果串口是空的直接返回
-  char received_chars[10];
-  vTaskDelay(1 / portTICK_PERIOD_MS);
-  // 从串口读取返回的数据，读取20个字符
-  uart_read_bytes(UART_NUM_SCREEN, received_chars, length, 100 / portTICK_PERIOD_MS);
+    int length = 0;
+    uart_get_buffered_data_len(UART_NUM_SCREEN, (size_t*)&length);
+    if (length == 0) return;// 如果串口是空的直接返回
+    char received_chars[10];
+    // 从串口读取返回的数据，读取20个字符
+    uart_read_bytes(UART_NUM_SCREEN, received_chars, length, 100 / portTICK_PERIOD_MS);
 
-  // 根据指令做不同动作
-  if (received_chars[0] == 'R') // A指令，设置为电阻测量模式
-  {
+    // 根据指令做不同动作
+    if (received_chars[0] == 'R') // A指令，设置为电阻测量模式
+    {
 
-  }else if(received_chars[0] == 'T') // T指令，设置为三极管测量模式
-  //  最后清空串口
-  while (length >= 0)
-    uart_flush(UART_NUM_SCREEN);
-  return 0;
+    }else if(received_chars[0] == 'T') // T指令，设置为三极管测量模式
+    //  最后清空串口
+    while (length >= 0)
+        uart_flush(UART_NUM_SCREEN); 
 }
+
+void UARTscreen_class::command_send(data4Tasks com)
+{
+    //printf("page0.t2.txt=\"");
+    UARTWriteBytes("page0.t2.txt=\"");
+    switch (com.measuringMode)
+    {
+        case ohm200:
+            //printf("200");
+            UARTWriteBytes("200");
+            break;
+        case ohm2K:
+            //printf("2K");
+            UARTWriteBytes("2K");
+            break;
+        case ohm20K:
+            //printf("20K");
+            UARTWriteBytes("20K");
+            break;
+        case ohm200K:
+            //printf("200K");
+            UARTWriteBytes("200K");
+            break;
+        case transistor:
+        case NPN:
+            //printf("NPN");
+            UARTWriteBytes("NPN");
+            break;
+        case PNP:
+            //printf("PNP");
+            UARTWriteBytes("PNP");
+            break;
+    }
+    //printf("\"\xff\xff\xff");
+    UARTWriteBytes("\"");
+    UARTcommandEnd();
+    //printf("page0.t2.txt=\"");
+    com.measuringValue_int = (uint16_t) com.measuringValue; //从测量值中取整数部分
+    com.measuringValue_float = (uint16_t) (com.measuringValue - com.measuringValue_int)*1000;    //从测量值中取小数部分
+    //printf("page0.t2.txt=\"");
+    //printf("\"\xff\xff\xff");
+}
+
+
+

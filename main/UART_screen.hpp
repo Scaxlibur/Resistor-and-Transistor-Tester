@@ -5,10 +5,19 @@
 #include <string.h>
 #include "soc\gpio_num.h"
 #include "FreeRTOS/portmacro.h"
+#include "modeSwitch.hpp"
+#include <string.h>
 
 #define UART_NUM_SCREEN UART_NUM_1
-#define UART_NUM_SCREEN_TX UART_PIN_NO_CHANGE
-#define UART_NUM_SCREEN_RX UART_PIN_NO_CHANGE
+#define UART_NUM_SCREEN_TX GPIO_NUM_17
+#define UART_NUM_SCREEN_RX GPIO_NUM_18
+
+typedef struct{
+    measuringMode_t measuringMode;  //测量模式
+    uint16_t measuringValue_int;    //测量结果的整数部分
+    uint16_t measuringValue_float;  //测量结果的小数部分
+    float measuringValue;           //测量真值
+}data4Tasks;
 
 class UARTscreen_class
 {
@@ -23,12 +32,17 @@ private:
     };
     static const int RX_BUF_SIZE = 1024;  //串口接收缓冲区大小
     void init_uart(void);
-    int command_loop(void);
+    void UARTWriteBytes(uint8_t data);
+    void UARTWriteBytes(uint16_t data);
+    void UARTWriteBytes(uint32_t data);
+    void UARTWriteBytes(const char* data);
+    void UARTcommandEnd(void);
 
 public:
     UARTscreen_class();
     ~UARTscreen_class();
-    
+    void command_send(data4Tasks com);
+    void command_receive(data4Tasks com);
 };
 
 #endif
