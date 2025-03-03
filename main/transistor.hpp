@@ -7,13 +7,12 @@
 class transistorMeasuring_class
 {
 private:
-    
     ADC_class ADC; 
 
 public:
     transistorMeasuring_class(/* args */);
     ~transistorMeasuring_class();
-    int beta_compute(measuringMode_t transistorType);
+    float beta_compute(measuringMode_t transistorType);
 };
 
 
