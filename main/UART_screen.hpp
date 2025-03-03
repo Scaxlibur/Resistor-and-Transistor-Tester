@@ -7,6 +7,7 @@
 #include "FreeRTOS/portmacro.h"
 #include "modeSwitch.hpp"
 #include <string.h>
+#include <stdlib.h>
 
 #define UART_NUM_SCREEN UART_NUM_1
 #define UART_NUM_SCREEN_TX GPIO_NUM_17

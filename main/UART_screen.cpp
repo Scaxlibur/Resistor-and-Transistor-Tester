@@ -108,11 +108,13 @@ void UARTscreen_class::command_send(data4Tasks com)
     //printf("\"\xff\xff\xff");
     UARTWriteBytes("\"");
     UARTcommandEnd();
-    //printf("page0.t2.txt=\"");
-    com.measuringValue_int = (uint16_t) com.measuringValue; //从测量值中取整数部分
-    com.measuringValue_float = (uint16_t) (com.measuringValue - com.measuringValue_int)*1000;    //从测量值中取小数部分
-    //printf("page0.t2.txt=\"");
-    //printf("\"\xff\xff\xff");
+    
+    com.measuringValue_int = com.measuringValue * 1000; //把测量值转换为伪浮点数（后三位是小数）的字符串
+    UARTWriteBytes("page0.x0.val=");
+    char change[32];
+    itoa(com.measuringValue_int, change, 10);
+    UARTWriteBytes(change);
+    UARTcommandEnd();
 }
 
 
