@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "i2c_screen.hpp"
 #include "resistor.hpp"
 #include "transistor.hpp"
 #include "UART_screen.hpp"
@@ -7,7 +6,6 @@
 
 QueueHandle_t screen_modeSwitch_measuring_com_handle;       //屏幕、电阻测量、三极管测量的三方通信队列
 TaskHandle_t UARTscreen_taskHandle;
-TaskHandle_t I2Cscreen_taskHandle;
 TaskHandle_t resistor_taskHandle;
 TaskHandle_t transistor_taskHandle;
 TaskHandle_t switch_taskhandle;
@@ -21,6 +19,7 @@ void UARTscreen_task(void *arg)
     {
         for(int i=0;i<7;i++){
             screen_modeSwitch_measuring_com.measuringMode = (measuringMode_t)i;
+            screen_modeSwitch_measuring_com.measuringValue = i;
             UARTscreen.command_send(screen_modeSwitch_measuring_com);
             vTaskDelay(1000 / portTICK_PERIOD_MS);
 
@@ -100,27 +99,18 @@ void transistor_task(void *arg)
     while (true)
     {
         screen_modeSwitch_measuring_com_status = xQueueReceive(screen_modeSwitch_measuring_com_handle, &screen_modeSwitch_measuring_com.measuringMode, 50/portTICK_PERIOD_MS);
-        if(screen_modeSwitch_measuring_com_status == pdTRUE)
+        if(screen_modeSwitch_measuring_com_status == pdTRUE) //先看通信是否正常
         {
             if((screen_modeSwitch_measuring_com.measuringMode == transistor)||
-               (screen_modeSwitch_measuring_com.measuringMode == NPN)||
-               (screen_modeSwitch_measuring_com.measuringMode == PNP))
+               (screen_modeSwitch_measuring_com.measuringMode == NPN))
                {
-                    screen_modeSwitch_measuring_com.measuringValue_int = transistorMeasuring.beta_compute(NPN);//这里到底怎么写还需要思考
+                    screen_modeSwitch_measuring_com.measuringValue = transistorMeasuring.beta_compute(NPN);
+               }else if(screen_modeSwitch_measuring_com.measuringMode == PNP)
+               {
+                    screen_modeSwitch_measuring_com.measuringValue = transistorMeasuring.beta_compute(PNP);
                }
         }
         screen_modeSwitch_measuring_com_status = xQueueSendToFront(screen_modeSwitch_measuring_com_handle, &screen_modeSwitch_measuring_com, 50/portTICK_PERIOD_MS);//把状态发送给屏幕
-    }
-}
-
-void I2Cscreen_task(void *arg)
-{
-    I2Cscreen_class I2Cscreen;
-    data4Tasks screen_modeSwitch_measuring_com;
-    BaseType_t screen_modeSwitch_measuring_com_status;
-    while(true)
-    {
-        screen_modeSwitch_measuring_com_status = xQueueReceive(screen_modeSwitch_measuring_com_handle, &screen_modeSwitch_measuring_com, 50/portTICK_PERIOD_MS);
     }
 }
 
