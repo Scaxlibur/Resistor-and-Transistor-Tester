@@ -5,7 +5,9 @@
 #include "modeSwitch.hpp"
 #include "ADS1115.hpp"
 
-QueueHandle_t screen_modeSwitch_measuring_com_handle;       //屏幕、电阻测量、三极管测量的三方通信队列
+QueueHandle_t screen_measuring_com_handle;       //屏幕到测量仪的三方通信队列
+QueueHandle_t measuring_screen_com_handle;       //测量仪到屏幕的三方通信队列
+
 TaskHandle_t UARTscreen_taskHandle;
 TaskHandle_t resistor_taskHandle;
 TaskHandle_t transistor_taskHandle;
@@ -38,24 +40,25 @@ i2c_config_t i2c_cfg = {
     .dev_addr = 0x49,
   };
 
+/*
 void UARTscreen_task(void *arg)
 {
     UARTscreen_class UARTscreen;
-    BaseType_t screen_modeSwitch_measuring_com_status;
-    data4Tasks screen_modeSwitch_measuring_com;
+    BaseType_t screen_measuring_com_status;
+    data4Tasks screen_measuring_com;
+    BaseType_t measuring_screen_com_status;
+    data4Tasks measuring_screen_com;
     while(true)
     {
-        screen_modeSwitch_measuring_com.measuringMode = UARTscreen.command_receive();
-        xQueueSendToFront(screen_modeSwitch_measuring_com_handle, &screen_modeSwitch_measuring_com, 50/portTICK_PERIOD_MS);
-        xQueueReceive(screen_modeSwitch_measuring_com_handle, &screen_modeSwitch_measuring_com, 500/portTICK_PERIOD_MS);
-        UARTscreen.command_send(screen_modeSwitch_measuring_com);
+        screen_measuring_com.measuringMode = UARTscreen.command_receive();//从屏幕中读取挡位
+        xQueueSendToFront(screen_measuring_com_handle, &screen_measuring_com, 0);
+            measuring_screen_com_status = xQueueReceive(measuring_screen_com_handle, &measuring_screen_com, 0);
+            UARTscreen.command_send(measuring_screen_com);
+            screen_measuring_com = measuring_screen_com;
+                
         
         
-        printf("%d",(int)screen_modeSwitch_measuring_com.measuringMode);
-        
-        
-        
-        
+        */
         /*for(int i=0;i<7;i++){
             screen_modeSwitch_measuring_com.measuringMode = (measuringMode_t)i;
             screen_modeSwitch_measuring_com.measuringValue = i;
@@ -64,14 +67,14 @@ void UARTscreen_task(void *arg)
         }*/
         //screen_modeSwitch_measuring_com_status = xQueueReceive(screen_modeSwitch_measuring_com_handle, &screen_modeSwitch_measuring_com, 500/portTICK_PERIOD_MS);  //从队列screen_modeSwitch_measuring_com中取一条数据
         //if(screen_modeSwitch_measuring_com_status == pdPASS )
-        {
+  //      {
 
-        }
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+   //     }
+   //     vTaskDelay(500 / portTICK_PERIOD_MS);
         
-    }
-}
-
+   // }
+//}
+/*
 void switch_task(void *arg)
 {
     modeSwitch_class modeSwitch;
@@ -150,86 +153,96 @@ void transistor_task(void *arg)
         screen_modeSwitch_measuring_com_status = xQueueSendToFront(screen_modeSwitch_measuring_com_handle, &screen_modeSwitch_measuring_com, 50/portTICK_PERIOD_MS);//把状态发送给屏幕
     }
 }
+*/
 
 void ads1115(void *arg)
 {
-    // Buffer for result
     uint16_t result = 0;
-    BaseType_t screen_modeSwitch_measuring_com_status;
-    data4Tasks screen_modeSwitch_measuring_com;
+    BaseType_t screen_measuring_com_status;
+    data4Tasks screen_measuring_com;
+    BaseType_t measuring_screen_com_status;
+    data4Tasks measuring_screen_com;
     for(;;) 
     {
-        xQueueReceive(screen_modeSwitch_measuring_com_handle, &screen_modeSwitch_measuring_com, 50/portTICK_PERIOD_MS);
-        //if (screen_modeSwitch_measuring_com.measuringMode == ohm200)
-        {
-            ADS1115_request_single_ended_AIN1();
+        printf("ads1115\n");
+        //screen_measuring_com_status = xQueueReceive(screen_measuring_com_handle, &screen_measuring_com, 500/portTICK_PERIOD_MS);
+        //measuring_screen_com = screen_measuring_com;
+        //if(screen_modeSwitch_measuring_com_status == pdTRUE){
+
+            //if (screen_modeSwitch_measuring_com.measuringMode == ohm200)
+            {
+                
+                ADS1115_request_single_ended_AIN1();
+                while(!ADS1115_get_conversion_state()) 
+                    vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
+                result = ADS1115_get_conversion() ;
+                float votage = result * 0.0001875;
+                float resistor = votage * 200;
+                printf("%f\n", resistor);
+                printf("%f\n", votage);
+                measuring_screen_com.measuringValue = resistor;
+                measuring_screen_com.measuringMode = ohm200;
+            }/*
+            else if(screen_modeSwitch_measuring_com.measuringMode == ohm2K){
+                ADS1115_request_single_ended_AIN1();
+                while(!ADS1115_get_conversion_state()) 
+                vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
+                result = ADS1115_get_conversion() ;
+                float votage = result * 0.0001875;
+                float resistor = votage * 200 *220 /(220-200*votage);
+                screen_modeSwitch_measuring_com.measuringValue = resistor;
+            }else if(screen_modeSwitch_measuring_com.measuringMode == ohm20K){
+                ADS1115_request_single_ended_AIN1();
+                while(!ADS1115_get_conversion_state()) 
+                vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
+                result = ADS1115_get_conversion() ;
+                float votage = result * 0.0001875;
+                float resistor = votage * 200 *220 /(220-200*votage);
+                screen_modeSwitch_measuring_com.measuringValue = resistor;
+            }else if(screen_modeSwitch_measuring_com.measuringMode == ohm200K){ 
+                ADS1115_request_single_ended_AIN1();
+                while(!ADS1115_get_conversion_state()) 
+                vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
+                result = ADS1115_get_conversion() ;
+                float votage = result * 0.0001875;
+                float resistor = votage * 200 *200 /(200-200*votage);
+                screen_modeSwitch_measuring_com.measuringValue = resistor;
+            }else if(screen_modeSwitch_measuring_com.measuringMode == PNP){
+                ADS1115_request_single_ended_AIN0();
+                while(!ADS1115_get_conversion_state()) 
+                vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
+                result = ADS1115_get_conversion() ;
+                float votage = result * 0.0001875;
+                float beta = votage *25 * 100;//公式：beta = Vadc * 25 * 100
+                screen_modeSwitch_measuring_com.measuringValue = beta;
+            }else if(screen_modeSwitch_measuring_com.measuringMode == NPN){
+                ADS1115_request_single_ended_AIN2();
+                while(!ADS1115_get_conversion_state()) 
+                vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
+                result = ADS1115_get_conversion() ;
+                float votage = result * 0.0001875;
+                float beta = (5 - votage) * 2500;//公式：beta = (5 - 4* Vadc) * 25 * 100
+                screen_modeSwitch_measuring_com.measuringValue = beta;
+            }       
+        */
+            //xQueueSendToFront(measuring_screen_com_handle, &measuring_screen_com, 500/portTICK_PERIOD_MS);
+            
+            /*
+            // Request single ended on pin AIN0  
+            ADS1115_request_single_ended_AIN1();      // all functions except for get_conversion_X return 'esp_err_t' for logging
+
+            // Check conversion state - returns true if conversion is complete 
             while(!ADS1115_get_conversion_state()) 
                 vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
+            
+            // Return latest conversion value
             result = ADS1115_get_conversion() ;
             float votage = result * 0.0001875;
-            float resistor = votage * 200;
-            printf("%f", resistor);
-            screen_modeSwitch_measuring_com.measuringValue = resistor;
-        }/*
-        else if(screen_modeSwitch_measuring_com.measuringMode == ohm2K){
-            ADS1115_request_single_ended_AIN1();
-            while(!ADS1115_get_conversion_state()) 
-            vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
-            result = ADS1115_get_conversion() ;
-            float votage = result * 0.0001875;
-            float resistor = votage * 200 *220 /(220-200*votage);
-            screen_modeSwitch_measuring_com.measuringValue = resistor;
-        }else if(screen_modeSwitch_measuring_com.measuringMode == ohm20K){
-            ADS1115_request_single_ended_AIN1();
-            while(!ADS1115_get_conversion_state()) 
-            vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
-            result = ADS1115_get_conversion() ;
-            float votage = result * 0.0001875;
-            float resistor = votage * 200 *220 /(220-200*votage);
-            screen_modeSwitch_measuring_com.measuringValue = resistor;
-        }else if(screen_modeSwitch_measuring_com.measuringMode == ohm200K){ 
-            ADS1115_request_single_ended_AIN1();
-            while(!ADS1115_get_conversion_state()) 
-            vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
-            result = ADS1115_get_conversion() ;
-            float votage = result * 0.0001875;
-            float resistor = votage * 200 *200 /(200-200*votage);
-            screen_modeSwitch_measuring_com.measuringValue = resistor;
-        }else if(screen_modeSwitch_measuring_com.measuringMode == PNP){
-            ADS1115_request_single_ended_AIN0();
-            while(!ADS1115_get_conversion_state()) 
-            vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
-            result = ADS1115_get_conversion() ;
-            float votage = result * 0.0001875;
-            float beta = votage *25 * 100;//公式：beta = Vadc * 25 * 100
-            screen_modeSwitch_measuring_com.measuringValue = beta;
-        }else if(screen_modeSwitch_measuring_com.measuringMode == NPN){
-            ADS1115_request_single_ended_AIN2();
-            while(!ADS1115_get_conversion_state()) 
-            vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
-            result = ADS1115_get_conversion() ;
-            float votage = result * 0.0001875;
-            float beta = (5 - votage) * 2500;//公式：beta = (5 - 4* Vadc) * 25 * 100
-            screen_modeSwitch_measuring_com.measuringValue = beta;
-        }       
-    
-        xQueueSendToFront(screen_modeSwitch_measuring_com_handle, &screen_modeSwitch_measuring_com, 50/portTICK_PERIOD_MS);
-        */
-        /*
-        // Request single ended on pin AIN0  
-        ADS1115_request_single_ended_AIN1();      // all functions except for get_conversion_X return 'esp_err_t' for logging
-
-        // Check conversion state - returns true if conversion is complete 
-        while(!ADS1115_get_conversion_state()) 
-            vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
-        
-        // Return latest conversion value
-        result = ADS1115_get_conversion() ;
-        float votage = result * 0.0001875;
-        printf("Conversion Value: %f V\n", votage);
-        //float beta = (5 - 4 * votage)* 25*100; //公式：beta = (5 - 4* Vadc) * 25 * 100    
-        //printf("beta: %f \n", beta);
-        */  
+            printf("Conversion Value: %f V\n", votage);
+            //float beta = (5 - 4 * votage)* 25*100; //公式：beta = (5 - 4* Vadc) * 25 * 100    
+            //printf("beta: %f \n", beta);
+            */ 
+        //} 
         vTaskDelay(500 / portTICK_PERIOD_MS);
     }
 
@@ -241,17 +254,117 @@ extern "C" void app_main(void)
 {
     printf("power on\n");
     printf("Starting ADS1115 example..\n");
-    screen_modeSwitch_measuring_com_handle = xQueueCreate(10, sizeof(data4Tasks));
-        // Setup I2C
-        i2c_param_config(I2C_NUM, &i2c_cfg);
-        i2c_driver_install(I2C_NUM, I2C_MODE, I2C_RX_BUF_STATE, I2C_TX_BUF_STATE, I2C_INTR_ALOC_FLAG);
-      
-        // Setup ADS1115
-        ADS1115_initiate(&ads1115_cfg);
+    //screen_measuring_com_handle = xQueueCreate(10, sizeof(data4Tasks));
+    //measuring_screen_com_handle = xQueueCreate(10, sizeof(data4Tasks));
+    // Setup I2C
+    i2c_param_config(I2C_NUM, &i2c_cfg);
+    i2c_driver_install(I2C_NUM, I2C_MODE, I2C_RX_BUF_STATE, I2C_TX_BUF_STATE, I2C_INTR_ALOC_FLAG);
+    
+    // Setup ADS1115
+    ADS1115_initiate(&ads1115_cfg);
 /*
     xTaskCreate(resistor_task, "resistor_task", 12*1024, NULL, 5, &resistor_taskHandle);
     xTaskCreate(transistor_task, "transistor_task", 12*1024, NULL, 5, &transistor_taskHandle);
     */
-    xTaskCreate(UARTscreen_task, "UARTscreen_task", 12*1024, NULL, 5, &UARTscreen_taskHandle);
-    xTaskCreate(ads1115, "ads1115" ,12*1024 , NULL , 3, &ads1115_taskhandle);
+    UARTscreen_class UARTscreen;
+    data4Tasks com;
+    int16_t result;
+    while (true)
+    {
+        com.measuringMode = UARTscreen.command_receive(com.measuringMode);//从屏幕中读取挡位
+        //xQueueSendToFront(screen_measuring_com_handle, &screen_measuring_com, 0);
+        float votage;
+        float resistor;
+        float beta;
+        switch (com.measuringMode)
+        {
+        case error:
+        case ohm200://4v以上结果为error
+            ADS1115_request_single_ended_AIN1();
+            while(!ADS1115_get_conversion_state()) 
+                vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
+            result = ADS1115_get_conversion() ;
+             votage = result * 0.0001875;
+             resistor = votage * 200;
+            printf("%f\n", resistor);
+            printf("%fV\n", votage);
+            com.measuringValue = resistor;
+            
+            com.measuringMode = ohm200;
+            if (votage > 4)  com.measuringMode = error;
+            break;
+        case ohm2K:
+            ADS1115_request_single_ended_AIN1();
+            while(!ADS1115_get_conversion_state()) 
+                vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
+            result = ADS1115_get_conversion() ;
+             votage = result * 0.0001875 - 0.0075;
+             resistor = votage * 200 *220 /(220-200*votage);
+            printf("%f\n", resistor);
+            printf("%fV\n", votage);
+            com.measuringValue = resistor;
+            com.measuringMode = ohm2K;
+            break;        
+        case ohm20K:
+            ADS1115_request_single_ended_AIN1();
+            while(!ADS1115_get_conversion_state()) 
+                vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
+            result = ADS1115_get_conversion() ;
+             votage = result * 0.0001875;
+             resistor = votage * 200 *220 /(220-200*votage);
+            printf("%f\n", resistor);
+            printf("%fV\n", votage);
+            com.measuringValue = resistor;
+            com.measuringMode = ohm20K;
+            break;        
+        case ohm200K:
+            ADS1115_request_single_ended_AIN1();
+            while(!ADS1115_get_conversion_state()) 
+                vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
+            result = ADS1115_get_conversion() ;
+             votage = result * 0.0001875;
+             resistor = votage * 200 *200 /(200-200*votage);
+            printf("%f\n", resistor);
+            printf("%fV\n", votage);
+            com.measuringValue = resistor;
+            com.measuringMode = ohm200K;
+            break;
+        case PNP:
+            ADS1115_request_single_ended_AIN0();
+            while(!ADS1115_get_conversion_state()) 
+                vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
+            result = ADS1115_get_conversion() ;
+            votage = result * 0.0001875;
+            beta = votage *25 * 100;//公式：beta = Vadc * 25 * 100
+            printf("%f\n", beta);
+            printf("%f\n", votage);
+            com.measuringValue = beta;
+            com.measuringMode = PNP;
+            break;
+        case NPN:
+            ADS1115_request_single_ended_AIN2();
+            while(!ADS1115_get_conversion_state()) 
+                vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
+            result = ADS1115_get_conversion() ;
+            votage = result * 0.0001875;
+            beta = (5 - 4* votage) * 2500;//公式：beta = (5 - 4* Vadc) * 25 * 100
+            printf("%f\n", beta);
+            printf("%f\n", votage);
+            com.measuringValue = beta;
+            com.measuringMode = NPN;
+            break;
+        case transistor:
+            break;
+        default:
+            break;
+        }
+
+        UARTscreen.command_send(com);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
+    
+    //xTaskCreate(ads1115, "ads1115" ,12*1024 , NULL , 5, &ads1115_taskhandle);
+    //vTaskDelay(50 / portTICK_PERIOD_MS);
+    //xTaskCreate(UARTscreen_task, "UARTscreen_task", 12*1024, NULL, 5, &UARTscreen_taskHandle);
+    
 }

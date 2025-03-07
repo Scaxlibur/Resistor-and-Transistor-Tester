@@ -55,14 +55,14 @@ void UARTscreen_class::init_uart(void){
     };
 }
 
-measuringMode_t UARTscreen_class::command_receive()
+measuringMode_t UARTscreen_class::command_receive(measuringMode_t lastMode)
 {
     int length = 0;
     uart_get_buffered_data_len(UART_NUM_SCREEN, (size_t*)&length);
-    while (length == 0)
+    //while (length == 0)
     {
-        uart_get_buffered_data_len(UART_NUM_SCREEN, (size_t*)&length);
-        vTaskDelay(50 / portTICK_PERIOD_MS);
+    //    uart_get_buffered_data_len(UART_NUM_SCREEN, (size_t*)&length);
+     //   vTaskDelay(50 / portTICK_PERIOD_MS);
     }
     
     //if (length == 0) return ohm2K;// 如果串口是空的直接返回
@@ -97,7 +97,7 @@ measuringMode_t UARTscreen_class::command_receive()
         return NPN;
     }
     //  最后清空串口
-    return NPN;
+    return lastMode;
 }
 
 void UARTscreen_class::command_send(data4Tasks com)
@@ -130,12 +130,17 @@ void UARTscreen_class::command_send(data4Tasks com)
             //printf("PNP");
             UARTWriteBytes("PNP");
             break;
+        case error:
+            UARTWriteBytes("ERR");
+            break;
     }
     //printf("\"\xff\xff\xff");
     UARTWriteBytes("\"");
     UARTcommandEnd();
     
-    com.measuringValue_int = com.measuringValue * 1000; //把测量值转换为伪浮点数（后三位是小数）的字符串
+    com.measuringValue_int = (uint32_t)(com.measuringValue * 1000); //把测量值转换为伪浮点数（后三位是小数）的字符串
+    printf("原始数据 %f\n", com.measuringValue);
+    printf("伪浮点数 %ld\n", com.measuringValue_int);
     UARTWriteBytes("x0.val=");
     char change[32];
     itoa(com.measuringValue_int, change, 10);

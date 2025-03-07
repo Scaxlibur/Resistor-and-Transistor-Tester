@@ -16,7 +16,8 @@ typedef enum{
     ohm200K,
     transistor,
     NPN,
-    PNP
+    PNP,
+    error,
 }measuringMode_t; //测量挡位
 
 class modeSwitch_class
