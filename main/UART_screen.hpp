@@ -43,7 +43,7 @@ public:
     UARTscreen_class();
     ~UARTscreen_class();
     void command_send(data4Tasks com);
-    void command_receive(data4Tasks com);
+    measuringMode_t command_receive();
 };
 
 #endif

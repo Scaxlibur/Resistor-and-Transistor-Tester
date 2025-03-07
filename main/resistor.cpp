@@ -6,12 +6,11 @@ resistorMeasuring_class::resistorMeasuring_class()
 }
 
 resistorMeasuring_class::~resistorMeasuring_class(){
-    delete &ADC;    //ADC类的构造在这个类的私有成员里面，没有在构造函数单独构造
 }
 
 int resistorMeasuring_class::R_compute(measuringMode_t Rtype)
 {
-    int voltage_x10 = ADC.voltage_read_x10();
+    //int voltage_x10 = ADC.voltage_read_x10();
     switch (Rtype)
     {
     case ohm200:

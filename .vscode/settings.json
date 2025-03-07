@@ -4,10 +4,12 @@
     "idf.openOcdConfigs": [
         "board/esp32s3-builtin.cfg"
     ],
-    "idf.portWin": "COM5",
+    "idf.portWin": "COM15",
     "idf.toolsPathWin": "C:\\Users\\feisibo\\.espressif",
     "files.associations": {
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "random": "cpp",
+        "cmath": "cpp"
     },
     "idf.pythonInstallPath": "C:\\Users\\feisibo\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
     "idf.customExtraVars": {
