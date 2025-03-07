@@ -3,12 +3,40 @@
 #include "transistor.hpp"
 #include "UART_screen.hpp"
 #include "modeSwitch.hpp"
+#include "ADS1115.hpp"
 
 QueueHandle_t screen_modeSwitch_measuring_com_handle;       //屏幕、电阻测量、三极管测量的三方通信队列
 TaskHandle_t UARTscreen_taskHandle;
 TaskHandle_t resistor_taskHandle;
 TaskHandle_t transistor_taskHandle;
 TaskHandle_t switch_taskhandle;
+TaskHandle_t ads1115_taskhandle;
+
+/* i2c setup ----------------------------------o------- */
+// Config profile for espressif I2C lib
+i2c_config_t i2c_cfg = {                     
+    .mode = I2C_MODE_MASTER, 
+    .sda_io_num = SDA_IO,
+    .scl_io_num = SCL_IO,
+    .sda_pullup_en = GPIO_PULLUP_DISABLE,
+    .scl_pullup_en = GPIO_PULLUP_DISABLE,
+    .master = {
+       .clk_speed = FREQ_HZ,
+    },
+  };
+  
+  /* ADS1115 setup ------------------------------------- */
+  // Below uses the default values speficied by the datasheet
+  ads1115_t ads1115_cfg = {
+    .reg_cfg =  ADS1115_CFG_LS_COMP_MODE_TRAD | // Comparator is traditional
+                ADS1115_CFG_LS_COMP_LAT_NON |   // Comparator is non-latching
+                ADS1115_CFG_LS_COMP_POL_LOW |   // Alert is active low
+                ADS1115_CFG_LS_COMP_QUE_DIS |   // Compator is disabled
+                ADS1115_CFG_LS_DR_1600SPS |     // No. of samples to take
+                ADS1115_CFG_MS_MODE_SS |         // Mode is set to single-shot
+                ADS1115_CFG_MS_PGA_FSR_6_144V,
+    .dev_addr = 0x49,
+  };
 
 void UARTscreen_task(void *arg)
 {
@@ -114,15 +142,49 @@ void transistor_task(void *arg)
     }
 }
 
+void ads1115(void *arg)
+{
+    // Buffer for result
+    uint16_t result = 0;
+    // Setup I2C
+    i2c_param_config(I2C_NUM, &i2c_cfg);
+    i2c_driver_install(I2C_NUM, I2C_MODE, I2C_RX_BUF_STATE, I2C_TX_BUF_STATE, I2C_INTR_ALOC_FLAG);
+  
+    // Setup ADS1115
+    ADS1115_initiate(&ads1115_cfg);
+    for(;;) 
+    {
+        // Request single ended on pin AIN0  
+        ADS1115_request_single_ended_AIN1();      // all functions except for get_conversion_X return 'esp_err_t' for logging
+
+        // Check conversion state - returns true if conversion is complete 
+        while(!ADS1115_get_conversion_state()) 
+            vTaskDelay(5 / portTICK_PERIOD_MS);          // wait 5ms before check again
+        
+        // Return latest conversion value
+        result = ADS1115_get_conversion() ;
+        float votage = result * 0.0001875;   
+        printf("Conversion Value: %f V\n", votage);  
+    }
+
+    printf("Should not reach here!");
+    vTaskDelete(NULL);  
+}
+
 extern "C" void app_main(void)
 {
     printf("power on\n");
+    printf("Starting ADS1115 example..");
+
+
+    
     screen_modeSwitch_measuring_com_handle = xQueueCreate(10, sizeof(data4Tasks));
 /*
     xTaskCreate(I2Cscreen_task, "I2Cscreen_task", 12*1024, NULL, 5, &I2Cscreen_taskHandle);
     xTaskCreate(resistor_task, "resistor_task", 12*1024, NULL, 5, &resistor_taskHandle);
     xTaskCreate(transistor_task, "transistor_task", 12*1024, NULL, 5, &transistor_taskHandle);
     xTaskCreate(switch_task, "switch_task", 12*1024, NULL, 5, &switch_taskhandle);
-    */
-    xTaskCreate(UARTscreen_task, "UARTscreen_task", 12*1024, NULL, 5, &UARTscreen_taskHandle);
+    
+    xTaskCreate(UARTscreen_task, "UARTscreen_task", 12*1024, NULL, 5, &UARTscreen_taskHandle);*/
+    xTaskCreate(ads1115, "ads1115" ,2048 , NULL , 3, &ads1115_taskhandle);
 }
