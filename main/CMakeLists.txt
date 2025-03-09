@@ -1,2 +1,2 @@
-idf_component_register(SRCS "ADS1115.cpp" "modeSwitch.cpp" "UART_screen.cpp" "resistor.cpp" "transistor.cpp" "main.cpp"
+idf_component_register(SRCS "ADS1115.cpp" "modeSwitch.cpp" "UART_screen.cpp" "main.cpp"
                     INCLUDE_DIRS ".")

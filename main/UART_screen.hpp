@@ -17,7 +17,7 @@ typedef struct{
     measuringMode_t measuringMode;  //测量模式
     uint32_t measuringValue_int;    //测量结果的整数部分
     uint16_t measuringValue_float;  //测量结果的小数部分
-    float measuringValue;           //测量真值
+    double measuringValue;           //测量真值
 }data4Tasks;
 
 class UARTscreen_class

@@ -139,8 +139,9 @@ void UARTscreen_class::command_send(data4Tasks com)
     UARTcommandEnd();
     
     com.measuringValue_int = (uint32_t)(com.measuringValue * 1000); //把测量值转换为伪浮点数（后三位是小数）的字符串
-    printf("原始数据 %f\n", com.measuringValue);
-    printf("伪浮点数 %ld\n", com.measuringValue_int);
+    printf("原始数据 %lf\n", com.measuringValue);
+    printf("伪浮点数 %ld\n\n", com.measuringValue_int);
+
     UARTWriteBytes("x0.val=");
     char change[32];
     itoa(com.measuringValue_int, change, 10);
